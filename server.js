@@ -12,7 +12,7 @@ const upper  =  require('upper-case')
 const port = 8000;
 
 
-http.createServer(function(req, res){
+// http.createServer(function(req, res){
     // console.log(req.method)
     // console.log(req.url)
 
@@ -25,29 +25,29 @@ http.createServer(function(req, res){
 
     // Read file content and send back to client
 
-    fs.readFile('./public/data.txt',(err, data) => {
+    // fs.readFile('./public/data.txt',(err, data) => {
 
-        let str = data.toString("utf-8")
+    //     let str = data.toString("utf-8")
 
-        // console.log(str)
+    //     // console.log(str)
 
-        str = upper.upperCase(str)
+    //     str = upper.upperCase(str)
 
-        // console.log(str)
+    //     // console.log(str)
 
-        data = Buffer.from(str, "utf-8")
+    //     data = Buffer.from(str, "utf-8")
 
-        if(err){
-            // console.log(res)
-            res.writeHead(404, {'Content-Type': 'text/html'})
-            return res.end()
-        }
+    //     if(err){
+    //         // console.log(res)
+    //         res.writeHead(404, {'Content-Type': 'text/html'})
+    //         return res.end()
+    //     }
 
-        res.writeHead(200, {'Content-Type': 'text/html'});
-        res.write(data)
-        return res.end()
+    //     res.writeHead(200, {'Content-Type': 'text/html'});
+    //     res.write(data)
+    //     return res.end()
 
-    })
+    // })
 
     // write file
 
@@ -92,78 +92,106 @@ http.createServer(function(req, res){
     // const qdata = q.query; //returns an object: { year: 2017, month: 'february' }
     // console.log(qdata.month); //returns 'february'
 
-}).listen(port)
+// }).listen(port)
 
 
 // URL example
-// http
-//   .createServer(function (req, res) {
-//     const q = url.parse(req.url, true);
-//     const filename = "./public" + q.pathname;
+http
+  .createServer(function (req, res) {
+    const q = url.parse(req.url, true);
+    const filename = "./public" + q.pathname;
 
-//     // console.log(req.message)
+    // console.log(req.message)
 
-//     if(req.method == 'GET'){
-//         fs.readFile(filename, function (err, data) {
-//             if (err) {
-//               res.writeHead(404, { "Content-Type": "text/html" });
-//               return res.end("404 Not Found");
-//             }
+    if(req.method == 'GET'){
+        fs.readFile(filename, function (err, data) {
+            if (err) {
+              res.writeHead(404, { "Content-Type": "text/html" });
+              return res.end("404 Not Found");
+            }
       
-//             const type = q.pathname.split(".")[1];
-//             console.log(type);
-//             switch (type) {
-//               case "html":
-//                 res.writeHead(200, { "Content-Type": "text/html" });
-//                 break;
-//               case "css":
-//                 res.writeHead(200, { "Content-Type": "text/css" });
-//                 break;
-//               case "js":
-//                 res.writeHead(200, { "Content-Type": "text/javascript" });
-//                 break;
+            const type = q.pathname.split(".")[1];
+            console.log(type);
+            switch (type) {
+              case "html":
+                res.writeHead(200, { "Content-Type": "text/html" });
+                break;
+              case "css":
+                res.writeHead(200, { "Content-Type": "text/css" });
+                break;
+              case "js":
+                res.writeHead(200, { "Content-Type": "text/javascript" });
+                break;
       
-//               case "txt":
-//                 res.writeHead(200, { "Content-Type": "text" });
-//                 break;
+              case "txt":
+                res.writeHead(200, { "Content-Type": "text" });
+                break;
       
-//               case "json":
-//                   res.writeHead(200, { "Content-Type": "application/json" });
-//                 break;
+              case "json":
+                  res.writeHead(200, { "Content-Type": "application/json" });
+                break;
       
-//               default:
-//                 break;
-//             }
-//             res.write(data);
-//             return res.end();
-//           });
-//     }else if(req.method == 'POST'){
-//         res.writeHead(200, { "Content-Type": "application/json" });
-//         res.write(JSON.stringify({message: "POSTED SUCCESSFULL!!!!"}))
-//         return res.end()
-//     }
+              default:
+                break;
+            }
+            res.write(data);
+            return res.end();
+          });
+    }else if(req.method == 'POST'){
+        res.writeHead(200, { "Content-Type": "application/json" });
+     
+
+        let body = '{message: "asdasdasdas"}'
+        req.on('data', (buffer) => {
+            body += buffer.toString()
+        }).on('end', () => {
+            console.log(body)
+            body = JSON.parse(body)
+            fs.readFile(filename, (err, data) => {
+                let myData = data.toString()
+
+                myData = JSON.parse(myData)
+
+                myData["data"].push(body.message)
+
+                fs.writeFile(filename, JSON.stringify(myData) , (err) =>{
+                    if(err)
+                    throw err
+                    
+                    res.write(JSON.stringify({message: "POSTED SUCCESSFULL!!!!"}))
+                    return res.end()
+                })
+
+
+            })
+        })
+
+        
+
+
+    }
 
 
     
-//   })
-//   .listen(port, () => {
-//     console.log(`The server is running at port: ${port}`);
-//   });
+  })
+  .listen(port, () => {
+    console.log(`The server is running at port: ${port}`);
+  });
 
 // Events explained
 
 // const events = require('events');
 // const eventEmitter = new events.EventEmitter();
 
-// //Create an event handler:
+//Create an event handler:
 // const myEventHandler =  () => {
 //   console.log('I hear a scream!');
 // }
 
-// //Assign the event handler to an event:
+//Assign the event handler to an event:
 // eventEmitter.on('scream', myEventHandler);
 
-// //Fire the 'scream' event:
+//Fire the 'scream' event:
 // eventEmitter.emit('scream');
 
 // NPM packages
